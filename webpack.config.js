@@ -2,6 +2,7 @@ const path = require('path');
 const webpack = require('webpack');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+const CopyPlugin = require('copy-webpack-plugin');
 
 module.exports = (env) => {
   const DEV_MODE = 'development';
@@ -15,6 +16,9 @@ module.exports = (env) => {
       template: path.join(__dirname, 'template.html')
     }),
     new webpack.ProgressPlugin(),
+    new CopyPlugin({
+      patterns: [{from: path.join(__dirname, 'src', 'static'), to: 'public'}]
+    })
   ];
 
   if (isProd) {
@@ -32,6 +36,7 @@ module.exports = (env) => {
       filename: "[name].[contenthash].js",
       path: path.join(__dirname, 'build'),
       clean: true,
+      assetModuleFilename: "images/[hash][ext][query]"
     },
     plugins,
     module: {
@@ -41,12 +46,22 @@ module.exports = (env) => {
           use: [
             isDev ? 'style-loader' : MiniCssExtractPlugin.loader,
             'css-loader',
+            'postcss-loader',
             'sass-loader'
           ]
         },
         {
+          test: /\.(png|jpg|jpeg|gif|svg)/i,
+          type: "asset/resource"
+        },
+        {
           test: /\.js$/,
-          use: 'babel-loader',
+          use: {
+            loader: 'babel-loader',
+            options: {
+              presets: ['@babel/preset-env']
+            }
+          },
           exclude: /node_modules/,
         }
       ]
@@ -56,7 +71,6 @@ module.exports = (env) => {
       port: PORT,
       open: true,
       historyApiFallback: true,
-      hot: true,
     } : undefined,
   }
 };
