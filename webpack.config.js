@@ -3,6 +3,7 @@ const webpack = require('webpack');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const CopyPlugin = require('copy-webpack-plugin');
+const ImageMinimizerPlugin = require('image-minimizer-webpack-plugin');
 
 module.exports = (env) => {
   const DEV_MODE = 'development';
@@ -72,5 +73,22 @@ module.exports = (env) => {
       open: true,
       historyApiFallback: true,
     } : undefined,
+    optimization: {
+      minimizer: [
+        new ImageMinimizerPlugin({
+          minimizer: {
+            implementation: ImageMinimizerPlugin.imageminMinify,
+            options: {
+              plugins: [
+                ['gifsicle', {interlaced: true}],
+                ['jpegtran', {progressive: true}],
+                ['optipng', {optimizationLevel: 5}],
+                ['svgo', {name: 'preset-default'}],
+              ]
+            }
+          }
+        })
+      ]
+    }
   }
 };
